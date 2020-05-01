@@ -1,0 +1,66 @@
+<!-- Created by Jing George 4/10/2020 -->
+
+<%= button_to 'Back to Menu', menu_index_path %>
+<h1> Administrator Panel </h1>
+
+<!-- options to filter courses from the big list -->
+<div id="filters">
+  <!-- Filtering adapted from
+  https://forum.upcase.com/t/how-to-implement-filtering-for-my-rails-app/2834/2
+  -->
+  <%= form_tag admin_panel_index_path, method: "get" do %>
+    <%= select "course", "semester", options_for_select(@filter_opts[:sem], selected: params[:semester]) %>
+    <%= select "course", "name", options_for_select(@filter_opts[:name], selected: params[:name]) %>
+    <%= select "course", "session", options_for_select(@filter_opts[:ses], selected: params[:session]) %>
+    <%= select "course", "open", options_for_select(@filter_opts[:open], selected: params[:open]) %>
+    <%= submit_tag "Filter", name: nil %>
+  <% end %>
+</div>
+
+<!-- display courses -->
+<div id="course_list">
+
+  <% if @filtered.empty? %>
+    <h3>No courses match the filters applied.</h3>
+  <% else %>
+    <% @filtered.each do |c| %>
+
+      <div class="course">
+        <div class="row">
+        <div class="title"><%= c.name %>, Class #<%= c.class_num %></div>
+        <!-- link to assign grader and make other changes -->
+        <div class="edit"><a href="/admin_panel/modify?id=<%= c.id %>">Edit</a></div>
+        <div class="clear"></div>
+        </div>
+
+        <div class="row">
+        <div class="sem">Semester: <%= c.semester %></div>
+        <div class="ses">Session: <%= c.session %></div>
+        <div class="comp">Component: <%= c.component %></div>
+        <div class="clear"></div>
+        </div>
+
+        <div class="row">
+        <% if c.attendance %>
+        <i> ** This class requires grader attendance ** </i><br/>
+        <% end %>
+        <%= c.num_graders - c.graders.length() %> of <%= c.num_graders %> grading positions open.
+         Graders assigned: <%= c.graders.pluck(:name).join('; ') %>
+        </div>
+
+        <!-- for each meeting print a row -->
+        <% c.meetings.each do |m| %>
+        <div class ="row">
+        <% loc = m.location %>
+        <% if loc == " " then loc = "Location N/A" end %>
+        <div class="loc"><%= loc %></div>
+        <div class="time"><%= m.time %></div>
+        <div class="instr"><%= m.instructors.pluck(:name).join('; ') %></div>
+        <div class="clear"></div>
+        </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+</div>
